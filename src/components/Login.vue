@@ -28,7 +28,6 @@
 </template>
 
 <script>
-import axios from 'axios'
 export default {
   data () {
     return {
@@ -54,33 +53,34 @@ export default {
       // 通过 ref 拿到 el-form 组件, 调用重置方法
       this.$refs.form.resetFields()
     },
-    login () {
-      this.$refs.form.validate(isValid => {
-        if (!isValid) return
-        axios({
+    async login () {
+      try {
+        await this.$refs.form.validate()
+        const res = await this.$axios({
           method: 'post',
-          url: 'http://localhost:8888/api/private/v1/login',
+          url: 'login',
           data: this.form
-        }).then(res => {
-          const { meta, data } = res.data
-          if (meta.status === 200) {
-            localStorage.setItem('token', data.token)
-            this.$message({
-              type: 'success',
-              message: '恭喜,登录成功',
-              duration: 1000
-            })
-            this.$router.push('/index')
-          } else {
-            console.log(meta)
-            this.$message({
-              type: 'error',
-              message: meta.msg,
-              duration: 1000
-            })
-          }
         })
-      })
+        const { meta, data } = res
+        if (meta.status === 200) {
+          localStorage.setItem('token', data.token)
+          this.$message({
+            type: 'success',
+            message: '恭喜,登录成功',
+            duration: 1000
+          })
+          this.$router.push('/index')
+        } else {
+          console.log(meta)
+          this.$message({
+            type: 'error',
+            message: meta.msg,
+            duration: 1000
+          })
+        }
+      } catch (e) {
+        console.log(e)
+      }
     }
   }
 }
